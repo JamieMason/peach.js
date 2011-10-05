@@ -1,9 +1,10 @@
+To see the code in action, please run and view my performance tests at [http://jsperf.com/precompiled-each-iterators](http://jsperf.com/precompiled-each-iterators).
 
-This small utility is only a few hours old, but aims to take any function you would otherwise pass directly to an iterator function such as underscore.js' _.each and returns another, more performant version.
+This small utility is only a few hours old, but aims to take any function you would otherwise pass directly to an iterator function such as underscore.js' _.each and returns another (hopefully) more performant version.
 
 After this first few hours work, only iterating over indexed Arrays is supported - but I aim to support the functionality of _.each in full.
 
-For the moment it's exposed at each.compile - but this may chang
+For the moment it's exposed at each.compile - but this may change.
 
 	<!DOCTYPE HTML>
 	<html>
@@ -22,5 +23,3 @@ For the moment it's exposed at each.compile - but this may chang
 		</script>
 	</body>
 	</html>
-
-To see the code in action, please run and view my performance tests at [http://jsperf.com/precompiled-each-iterators](http://jsperf.com/precompiled-each-iterators).
