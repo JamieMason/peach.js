@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>each.compile(iterator);</title>
+</head>
+<body>
+	<script type="text/javascript" src="precompiled-each-iterators.js"></script>
+	<script type="text/javascript">
+	function ouputArguments (element, index, list) {
+		console.log(element, index, list);
+	}
+	var compiledIteratorUnrolled16Times = each.compile(ouputArguments, 16);
+	compiledIteratorUnrolled16Times(['a','b','c','d','e']);
+	</script>
+</body>
+</html>
