@@ -24,8 +24,13 @@ var each = (function ()
     		}
 
     		var parts = fn.getSource().split(/\{|\}/g);
-    		parts.pop();
     		parts.shift();
+
+    		if (parts.length === 3)
+    		{
+    		    parts.pop();
+    		}
+
     		return (body = (parts.join('') + '\n'));
     	};
 
@@ -49,23 +54,28 @@ var each = (function ()
 
     each.merge = function (elementParamName, indexParamName, listParamName, bodyOfLoop, timesToUnroll)
     {
-    	return eval([
-    	'(function compiledIterator (', listParamName, ')',
-    	'{',
-    		'var ', indexParamName, ' = 0,',
-    		    'iterations = ', listParamName, '.length,',
-    		    'n = iterations % ', timesToUnroll, ';',
+        return (function(src)
+        {
+            var fn;
+            eval(src);
+            return fn;
+        }([
+        '(fn = function compiledIterator (', listParamName, ')',
+        '{',
+        	'var ', indexParamName, ' = 0,',
+        	    'iterations = ', listParamName, '.length,',
+        	    'n = iterations % ', timesToUnroll, ';',
 
-    		'while (n--)',
-    		'{',
-    		    bodyOfLoop,
-    		'}',
-    		'n = (iterations * 0.125) ^ 0;',
-    		'while (n--)',
-    		'{',
-    		    new Array(timesToUnroll).join(bodyOfLoop),
-    		'}',
-    	'})'].join(''));
+        	'while (n--)',
+        	'{',
+        	    bodyOfLoop,
+        	'}',
+        	'n = (iterations * 0.125) ^ 0;',
+        	'while (n--)',
+        	'{',
+        	    new Array(timesToUnroll).join(bodyOfLoop),
+        	'}',
+        '})'].join('')));
     };
 
     each.getLoopBody = function (elementParamName, listParamName, bodyOfFunction)
