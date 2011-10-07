@@ -1,25 +1,27 @@
-To see the code in action, please run and view my performance tests at [http://jsperf.com/precompiled-each-iterators/2#run](http://jsperf.com/precompiled-each-iterators/2#run).
+To see the code in action, please  [run the performance tests at jsperf.com](http://jsperf.com/precompiled-each-iterators/3#run).
 
-This small utility is only a few hours old, but aims to take any function you would otherwise pass directly to an iterator function such as @documentcloud's [http://github.com/documentcloud/underscore](http://github.com/documentcloud/underscore) _.each() and returns another (hopefully) more performant version.
+`unroll(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to be more performant.
 
-After this first few hours work, only iterating over indexed Arrays is supported - but I aim to support the functionality of _.each in full.
+**Please Note:** Work only recently started on this project, so only iterating over indexed Arrays is supported so far. I aim though to support the full functionality of [`_.each()`](http://documentcloud.github.com/underscore/#each).
 
-For the moment it's exposed at each.compile - but this may change.
+Depending on how positive the performance gains might be, it'd be interesting to see whether this utility can be applied to [`jQuery.each()`](http://api.jquery.com/each/) combined with some memoization.
 
-	<!DOCTYPE HTML>
-	<html>
-	<head>
-		<meta charset="UTF-8">
-		<title>each.compile(iterator);</title>
-	</head>
-	<body>
-		<script type="text/javascript" src="precompiled-each-iterators.js"></script>
-		<script type="text/javascript">
-		function ouputArguments (element, index, list) {
-			console.log(element, index, list);
-		}
-		var compiledIteratorUnrolled16Times = each.compile(ouputArguments, 16);
-		compiledIteratorUnrolled16Times(['a','b','c','d','e']);
-		</script>
-	</body>
-	</html>
+	var someCollection = ['a','b','c','d','e','f','g','h','i'];
+
+	function ouputArguments (member, i, array) {
+		console.log(member, i, array, this);
+	}
+
+	// take a function you could pass to _.each like this
+	// _.each(ouputArguments, someCollection);
+	
+	// ...but instead precompile it (just once), into a faster version
+	var iteratorUnrolled16x = unroll(ouputArguments, 16);
+	
+	// and call that instead
+	iteratorUnrolled16x(someCollection);
+	
+	// as many times as you like
+	iteratorUnrolled16x(someCollection);
+
+Please help out by [reporting issues and ideas](https://github.com/JamieMason/Precompiled-each-Iterators/issues).
