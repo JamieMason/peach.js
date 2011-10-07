@@ -113,6 +113,21 @@ var unroll = (function ()
 	}
 
     /**
+     * @returns {Function} The function returned to the compiler caller
+     */
+	function iteratorWrapper (compiledIterator)
+	{
+	    /**
+	     * @param {Array} list The collection to be iterated over. @TODO Add support for Objects
+	     * @param {Object} [context] Optionally define what 'this' should reference within the iterator
+	     */
+        return function (list, context)
+        {
+            !context ? compiledIterator(list) : compiledIterator.apply(context, [list]);
+        };
+	}
+
+    /**
      * @returns {Function} Returns a new function with the original functionality and optimised iteration combined.
      */
 	function eachIteratorCompiler (iterator, timesToUnroll)
@@ -126,7 +141,7 @@ var unroll = (function ()
 			bodyOfLoop = getLoopBody(elementParamName, indexParamName, listParamName, iterator.getBody()),
 			compiledSource = getSource(elementParamName, indexParamName, listParamName, bodyOfLoop, timesToUnroll || 8);
 
-		return createFunction(compiledSource);
+		return iteratorWrapper(createFunction(compiledSource));
 	}
 
 	return eachIteratorCompiler;

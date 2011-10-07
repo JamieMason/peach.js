@@ -8,10 +8,11 @@
 	<script type="text/javascript" src="precompiled-each-iterators.js"></script>
 	<script type="text/javascript">
 	function ouputArguments (member, i, array) {
-		console.log(member, i, array);
+		console.log(member, i, array, this);
 	}
 	var iteratorUnrolled16x = unroll(ouputArguments, 16);
 	iteratorUnrolled16x(['a','b','c','d','e','f','g','h','i']);
+	iteratorUnrolled16x(['a','b','c','d','e','f','g','h','i'], {});
 	</script>
 </body>
 </html>
