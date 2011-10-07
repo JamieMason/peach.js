@@ -1,4 +1,4 @@
-To see the code in action, please  [run the performance tests at jsperf.com](http://jsperf.com/precompiled-each-iterators/3#run).
+To see the code in action, please  [run the performance tests at jsperf.com](http://jsperf.com/precompiled-each-iterators/4#run).
 
 `unroll(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to be more performant.
 
