@@ -5,7 +5,6 @@
 1. We provide [JavaScript loop speed tests](http://jsperf.com/different-kinds-of-loop/2#run) to measure which of the many ways of writing loops are the fastest *per browser*.
 1. [Loop unwinding](http://en.wikipedia.org/wiki/Loop_unwinding) is performed on the code in your function for better performance.
 1. The looping construct used as part of the unrolled/unwound version is the one proven to be the [fastest loop for the browser the user is using](http://jsperf.com/different-kinds-of-loop/2#run).
-1. The compiling is only needed once, to create the optimised/compiled function. The optimised function you're returned can then be called as many times as you like.
 
 ###The project only started recently, so...###
 
