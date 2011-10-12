@@ -1,10 +1,38 @@
-To see the code in action, please  [run the performance tests at jsperf.com](http://jsperf.com/precompiled-each-iterators/4#run).
+> `unroll(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to run faster.
 
-`unroll(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to be more performant.
+###How ~~does~~ will it work?###
 
-**Please Note:** Work only recently started on this project, so only iterating over indexed Arrays is supported so far. I aim though to support the full functionality of [`_.each()`](http://documentcloud.github.com/underscore/#each).
+1. We provide [JavaScript loop speed tests](http://jsperf.com/different-kinds-of-loop/2#run) to measure which of the many ways of writing loops are the fastest *per browser*.
+1. [Loop unwinding](http://en.wikipedia.org/wiki/Loop_unwinding) is performed on the code in your function for better performance.
+1. The looping construct used as part of the unrolled/unwound version is the one proven to be the [fastest loop for the browser the user is using](http://jsperf.com/different-kinds-of-loop/2#run).
+1. The compiling is only needed once, to create the optimised/compiled function. The optimised function you're returned can then be called as many times as you like.
 
-Depending on how positive the performance gains might be, it'd be interesting to see whether this utility can be applied to [`jQuery.each()`](http://api.jquery.com/each/) combined with some memoization.
+###The project only started recently, so...###
+
+1. The looping construct in use at the moment is the one which performs the best on average across all browsers, not the one targeted directly at the browser you're using.
+1. The current version only iterates over indexed Arrays, the full functionality of [`_.each()`](http://documentcloud.github.com/underscore/#each) though will be supported.
+
+Because the UA targeting isn't implemented yet, this project isn't yet as performant as it will be, but you can still see a [performance test of the current version](http://jsperf.com/precompiled-each-iterators/4#run) at jsperf.com.
+
+###Things some may wince at, at first###
+
+####1) It uses UA Sniffing####
+
+> [Modernizr aims to] bring an end to the UA sniffing practice. Using feature detection is a more reliable mechanic to establish what you can and cannot do in the current browser
+> 
+> [@paulirish](https://github.com/paulirish) at [http://www.modernizr.com/docs](http://www.modernizr.com/docs)
+
+Great advice and something I've applied in every project I've worked on until this one. The important distinction in our case is that we're not trying to find out **what the browser can do** but genuinely, **which one is it?**. How can I find out which loop construct is fastest any other way? 
+
+If you know: 1) You're a legend, 2) [file an issue](https://github.com/JamieMason/Precompiled-each-Iterators/issues/new). 
+
+###2) it uses eval()###
+
+Everyone knows [eval is evil](http://blogs.msdn.com/b/ericlippert/archive/2003/11/01/53329.aspx) - there are plenty of examples of misuse. But kind of like HTML Tables' among people not looking at the issue properly, if you [use eval for what it's intended for](http://berniesumption.com/software/eval-considered-useful/) (as we are doing) then it's all good, right?
+
+wrong? [file an issue](https://github.com/JamieMason/Precompiled-each-Iterators/issues/new).
+
+###Example###
 
 	var someCollection = ['a','b','c','d','e','f','g','h','i'];
 
