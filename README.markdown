@@ -18,16 +18,15 @@ Because the UA targeting isn't implemented yet, this project isn't yet as perfor
 ####1) It uses UA Sniffing####
 
 > [Modernizr aims to] bring an end to the UA sniffing practice. Using feature detection is a more reliable mechanic to establish what you can and cannot do in the current browser
-> 
 > [@paulirish](https://github.com/paulirish) at [http://www.modernizr.com/docs](http://www.modernizr.com/docs)
 
-Great advice and something I've applied in every project I've worked on until this one. The important distinction in our case is that we're not trying to find out **what the browser can do** but genuinely, **which one is it?**. How can I find out which loop construct is fastest any other way? 
+Great advice, the important distinction in this specific case is that we're not trying to find out **what the browser can do** but genuinely, **which one is it?**. How can I find out which loop construct is fastest any other way? 
 
 If you know: 1) You're a legend, 2) [file an issue](https://github.com/JamieMason/Precompiled-each-Iterators/issues/new). 
 
-###2) it uses eval()###
+####2) it uses eval()####
 
-Everyone knows [eval is evil](http://blogs.msdn.com/b/ericlippert/archive/2003/11/01/53329.aspx) - there are plenty of examples of misuse. But kind of like HTML Tables' among people not looking at the issue properly, if you [use eval for what it's intended for](http://berniesumption.com/software/eval-considered-useful/) (as we are doing) then it's all good, right?
+Everyone's heard ["eval is evil"](http://blogs.msdn.com/b/ericlippert/archive/2003/11/01/53329.aspx) - there are plenty of examples of misuse. But *kind of* like HTML Tables among some people not looking at the issue properly, if you [use eval for what it's intended for](http://berniesumption.com/software/eval-considered-useful/) (as we are doing) then it's all good, right?
 
 wrong? [file an issue](https://github.com/JamieMason/Precompiled-each-Iterators/issues/new).
 
