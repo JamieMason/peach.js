@@ -31,16 +31,37 @@ var unroll = (function()
     // tests done at http://jsperf.com/different-kinds-of-loop/2#run
     // ====================================================================================
 
-    var constructInUse = forDown,
+    var constructInUse = forDown
         // @TODO This lookup table will be more accurate once we have more test data
-        constructLookup = {
-            'Chrome': forDown,
-            'Firefox': forDown,
-            'IE': forDown,
-            'Android': whileDown,
-            'IE Browser 7': whileDown,
-            'Opera': whileDown,
-            'Safari': whileDown
+        , constructLookup = {
+            'Android 2': whileDown // whileDown 3
+            , 'Camino 2': whileDown // whileDown 3
+            , 'Chrome 12': forDown
+            , 'Chrome 13': whileDown // while i < arr.length without caching
+            , 'Chrome 14': forDown
+            , 'Chrome 15': whileDown
+            , 'Fennec 6': whileDown // whileDown 2
+            , 'Firefox 3': forDown
+            , 'Firefox 3.0.18': whileDown // whileDown 3
+            , 'Firefox 5.0': forDown
+            , 'Firefox 5.0.1': whileDown // while i < arr.length with caching
+            , 'Firefox 6': whileDown
+            , 'Firefox 7': forDown
+            , 'Firefox 8': forDown
+            , 'IE 5.5': forDown
+            , 'IE 7': whileDown // whileDown 3
+            , 'IE 8': whileDown // whileDown 3
+            , 'IE 9': forDown
+            , 'iPad 4': forDown
+            , 'iPhone 4': whileDown
+            , 'Opera 10': whileDown // whileDown 2
+            , 'Opera 11': whileDown // whileDown 2
+            , 'Opera Mobile 11': whileDown // whileDown 3
+            , 'Safari 3.2.2': whileDown // whileDown 2
+            , 'Safari 4': forDown
+            , 'Safari 5.0.3': whileDown // whileDown 3
+            , 'Safari 5.0.5': forDown // forUp
+            , 'Safari 5.1': forDown
         };
 
     // utility which decorates a function with methods for accessing it's source code and
@@ -49,18 +70,18 @@ var unroll = (function()
 
     function inspectableFn(fn)
     {
-        var source,
-            paramNames,
-            body;
+        var source
+            , paramNames
+            , body;
 
         /**
          * @returns {String} All source code for the function
          * @example
          * function someFn (a,b) { return a * b; }
-         * someFn.getSource();
+         * someFn.compileIteratorSource();
          * >> "function someFn (a,b) { return a * b; }"
          */
-        fn.getSource = function()
+        fn.compileIteratorSource = function()
         {
             return source || (source = Function.prototype.toString.apply(fn));
         };
@@ -77,7 +98,7 @@ var unroll = (function()
          */
         fn.getParamNames = function()
         {
-            source = fn.getSource();
+            source = fn.compileIteratorSource();
             return paramNames || (paramNames = source.split(/\(|\)/g)[1].replace(/\s*/g, '').split(','));
         };
 
@@ -95,7 +116,7 @@ var unroll = (function()
                 return body;
             }
 
-            var parts = fn.getSource().split(/\{|\}/g);
+            var parts = fn.compileIteratorSource().split(/\{|\}/g);
             parts.shift();
 
             if (parts.length === 3)
@@ -120,13 +141,13 @@ var unroll = (function()
         return (function(eval_ref) {
             var fn;
             return (fn = eval_ref('(fn = ' + compiledSource + ')'));
-        } (eval));
+        }(eval));
     }
 
     /**
      * @returns {String} Writes the source code for compiled iterator
      */
-    function getSource(paramNames, bodyOfLoop, timesToUnroll)
+    function compileIteratorSource(paramNames, bodyOfLoop, timesToUnroll)
     {
         return [
         'function (', paramNames.list, ') {',
@@ -155,9 +176,9 @@ var unroll = (function()
         var paramNames = iterator.getParamNames();
 
         return {
-            element: paramNames[0] || 'element',
-            i: paramNames[1] || 'index',
-            list: paramNames[2] || 'list'
+            element: paramNames[0] || 'element'
+            , i: paramNames[1] || 'index'
+            , list: paramNames[2] || 'list'
         };
     }
 
@@ -183,9 +204,9 @@ var unroll = (function()
     {
         iterator = inspectableFn(iterator);
 
-        var params = getParamNames(iterator),
-            bodyOfLoop = getLoopBody(params, iterator.getBody()),
-            compiledSource = getSource(params, bodyOfLoop, timesToUnroll || 8);
+        var params = getParamNames(iterator)
+            , bodyOfLoop = getLoopBody(params, iterator.getBody())
+            , compiledSource = compileIteratorSource(params, bodyOfLoop, timesToUnroll || 8);
 
         return iteratorWrapper(createFunction(compiledSource));
     }
@@ -194,32 +215,26 @@ var unroll = (function()
     // ====================================================================================
 
     /**
-     * @param {Object} JSON data returned from useragentstring.com API (http://useragentstring.com/pages/api.php)
+     * @param {string} reconciledUa eg: "IE Mobile 7", "Chrome 7.0.503"
      */
-    eachIteratorCompiler.setUserAgent = function(uaJson)
+    function setUserAgent(reconciledUa)
     {
-        var searchVendor = uaJson.agent_name,
-            searchVendorAndPlatform = searchVendor + ' ' + uaJson.agent_type,
-            searchVendorPlatformAndExactVersion = searchVendorAndPlatform + ' ' + uaJson.agent_version,
-            searchVendorPlatformAndMajorVersion = searchVendorAndPlatform + ' ' + uaJson.agent_version.charAt(0);
+        if (constructLookup[reconciledUa])
+        {
+            constructInUse = constructLookup[reconciledUa];
+            return;
+        }
 
-        if (searchVendorPlatformAndExactVersion in constructLookup)
-        {
-            constructInUse = constructLookup[searchVendorPlatformAndExactVersion];
-        }
-        else if (searchVendorPlatformAndMajorVersion in constructLookup)
-        {
-            constructInUse = constructLookup[searchVendorPlatformAndMajorVersion];
-        }
-        else if (searchVendorAndPlatform in constructLookup)
-        {
-            constructInUse = constructLookup[searchVendorAndPlatform];
-        }
-        else if (searchVendor in constructLookup)
-        {
-            constructInUse = constructLookup[searchVendor];
-        }
-    };
+        var vendorAndVersion = reconciledUa.split(/ (?=[0-9])/)
+            , vendor = vendorAndVersion[0]
+            , version = vendorAndVersion[1]
+            , majorVersionNumber = version.split('.')[0]
+            , vendorAndMajorVersion = vendor + ' ' + majorVersionNumber;
+
+        constructInUse = constructLookup[vendorAndMajorVersion] || constructLookup[vendor] || forDown;
+    }
+
+    eachIteratorCompiler.setUserAgent = setUserAgent;
 
     return eachIteratorCompiler;
 }());
