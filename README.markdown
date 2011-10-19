@@ -10,7 +10,7 @@
 
 1. The current version only iterates over indexed Arrays, the full functionality of [`_.each()`](http://documentcloud.github.com/underscore/#each) though will be supported.
 
-The looping construct in use is the one known to be fastest in the browser you're using, see a [performance comparison of the current version -vs jQuery and underscore.js](http://jsperf.com/precompiled-each-iterators/5#run) at jsperf.com.
+The looping construct in use is the one known to be fastest in the browser you're using, see a [performance comparison of the current version -vs jQuery and underscore.js](http://jsperf.com/precompiled-each-iterators/6#run) at jsperf.com.
 
 ###Example###
 
