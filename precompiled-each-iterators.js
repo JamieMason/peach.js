@@ -165,7 +165,11 @@ var unroll = (function()
      */
     function getLoopBody(paramNames, bodyOfFunction)
     {
-        return paramNames.element + '=' + paramNames.list + '[' + paramNames.i + '++];\n' + bodyOfFunction;
+        return [
+        paramNames.element + '=' + paramNames.list + '[' + paramNames.i + '];'
+            , bodyOfFunction
+            , paramNames.i + '++;'
+        ].join('\n');
     }
 
     /**
@@ -188,9 +192,9 @@ var unroll = (function()
     function iteratorWrapper(compiledIterator)
     {
         /**
-	     * @param {Array} list The collection to be iterated over. @TODO Add support for Objects
-	     * @param {Object} [context] Optionally define what 'this' should reference within the iterator
-	     */
+         * @param {Array} list The collection to be iterated over. @TODO Add support for Objects
+         * @param {Object} [context] Optionally define what 'this' should reference within the iterator
+         */
         return function(list, context)
         {
             !context ? compiledIterator(list) : compiledIterator.apply(context, [list]);
@@ -207,7 +211,7 @@ var unroll = (function()
         var params = getParamNames(iterator)
             , bodyOfLoop = getLoopBody(params, iterator.getBody())
             , compiledSource = compileIteratorSource(params, bodyOfLoop, timesToUnroll || 8);
-
+console.log(compiledSource);
         return iteratorWrapper(createFunction(compiledSource));
     }
 
