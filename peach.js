@@ -1,7 +1,8 @@
-var peach = (function()
+var peach = (function(create)
 {
-    // Loop Construct Compilers
-    // ====================================================================================
+    /* ==================================================================================== *\
+     * Loop Construct Compilers
+    \* ==================================================================================== */
 
     function forDown(paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
     {
@@ -27,9 +28,10 @@ var peach = (function()
         '}'].join('');
     }
 
-    // Lookup table for which loop construct performed best for the given user agent in
-    // tests done at http://jsperf.com/different-kinds-of-loop/2#run
-    // ====================================================================================
+    /* ==================================================================================== *\
+     * Lookup table for which loop construct performed best for the given user agent in
+     * tests done at http://jsperf.com/different-kinds-of-loop/2#run
+    \* ==================================================================================== */
 
     var constructInUse = forDown
         // @TODO This lookup table will be more accurate once we have more test data
@@ -62,11 +64,12 @@ var peach = (function()
             , 'Safari 5.0.3': whileDown // whileDown 3
             , 'Safari 5.0.5': forDown // forUp
             , 'Safari 5.1': forDown
-        };
+        }
 
-    // utility which decorates a function with methods for accessing it's source code and
-    // named parameters.
-    // ====================================================================================
+    /* ==================================================================================== *\
+     * utility which decorates a function with methods for accessing it's source code and
+     * named parameters.
+    \* ==================================================================================== */
 
     function inspectableFn(fn)
     {
@@ -78,10 +81,10 @@ var peach = (function()
          * @returns {String} All source code for the function
          * @example
          * function someFn (a,b) { return a * b; }
-         * someFn.compileIteratorSource();
+         * someFn.source();
          * >> "function someFn (a,b) { return a * b; }"
          */
-        fn.compileIteratorSource = function()
+        fn.source = function()
         {
             return source || (source = Function.prototype.toString.apply(fn));
         };
@@ -90,15 +93,15 @@ var peach = (function()
          * @returns {Array} The names of a function's parameters
          * @example
          * function someFn (a,b) {}
-         * someFn.getParamNames();
+         * someFn.params();
          * >> ["a","b"]
          * function someOtherFn () {}
-         * someOtherFn.getParamNames();
+         * someOtherFn.params();
          * >> []
          */
-        fn.getParamNames = function()
+        fn.params = function()
         {
-            source = fn.compileIteratorSource();
+            source = fn.source();
             return paramNames || (paramNames = source.split(/\(|\)/g)[1].replace(/\s*/g, '').split(','));
         };
 
@@ -106,17 +109,17 @@ var peach = (function()
          * @returns {String} The source code for the executing body of the function
          * @example
          * function someFn (a,b) { return a * b; }
-         * someFn.getBody();
+         * someFn.body();
          * >> " return a * b; "
          */
-        fn.getBody = function()
+        fn.body = function()
         {
             if (body)
             {
                 return body;
             }
 
-            var parts = fn.compileIteratorSource().split(/\{|\}/g);
+            var parts = fn.source().split(/\{|\}/g);
             parts.shift();
 
             if (parts.length === 3)
@@ -132,17 +135,6 @@ var peach = (function()
 
     // Private methods used by peach()
     // ====================================================================================
-
-    /**
-     * @returns {Function} The newly compiled iterator
-     */
-    function createFunction(compiledSource)
-    {
-        return (function(eval_ref) {
-            var fn;
-            return (fn = eval_ref('(fn = ' + compiledSource + ')'));
-        }(eval));
-    }
 
     /**
      * @returns {String} Writes the source code for compiled iterator
@@ -174,7 +166,7 @@ var peach = (function()
     function getLoopBody(paramNames, bodyOfFunction)
     {
         return [
-        paramNames[0] + '=' + paramNames[2] + '[' + paramNames[1] + '];'
+            paramNames[0] + '=' + paramNames[2] + '[' + paramNames[1] + '];'
             , bodyOfFunction
             , paramNames[1] + '++;'
         ].join('\n');
@@ -185,7 +177,7 @@ var peach = (function()
      */
     function getParamNames(iterator)
     {
-        var paramNames = iterator.getParamNames();
+        var paramNames = iterator.params();
         paramNames[0] = paramNames[0] || 'element';
         paramNames[1] = paramNames[1] || 'index';
         paramNames[2] = paramNames[2] || 'list';
@@ -230,10 +222,10 @@ var peach = (function()
         iterator = inspectableFn(iterator);
 
         var params = getParamNames(iterator)
-            , bodyOfLoop = getLoopBody(params, iterator.getBody())
+            , bodyOfLoop = getLoopBody(params, iterator.body())
             , compiledSource = compileIteratorSource(params, bodyOfLoop, timesToUnroll || 8);
 
-        return iteratorWrapper(createFunction(compiledSource));
+        return iteratorWrapper(create(compiledSource));
     }
 
     // Public methods to configure peach()
@@ -262,4 +254,10 @@ var peach = (function()
     eachIteratorCompiler.setUserAgent = setUserAgent;
 
     return eachIteratorCompiler;
-}());
+}(function (s)
+{
+    return (function(ev) {
+        var f;
+        return (f = ev('(f=' + s + ')'));
+    }(eval));
+}));
