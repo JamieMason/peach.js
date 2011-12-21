@@ -7,10 +7,10 @@ var peach = (function (create)
     function forDown (paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
     {
         return [
-        'for (n = iterations % ', timesToUnroll, '; n > 0; n--) {',
+        'for (_n = _x % ', timesToUnroll, '; _n > 0; _n--) {',
             bodyOfLoop,
         '}',
-        'for (n = (iterations / ', timesToUnroll, ') ^ 0; n > 0; n--) {',
+        'for (_n = (_x / ', timesToUnroll, ') ^ 0; _n > 0; _n--) {',
             unrolledBodyOfLoop,
         '}'].join('');
     }
@@ -18,12 +18,12 @@ var peach = (function (create)
     function whileDown (paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
     {
         return [
-        'n = iterations % ', timesToUnroll, ';',
-        'while (n--) {',
+        '_n = _x % ', timesToUnroll, ';',
+        'while (_n--) {',
             bodyOfLoop,
         '}',
-        'n = (iterations / ', timesToUnroll, ') ^ 0;',
-        'while (n--) {',
+        '_n = (_x / ', timesToUnroll, ') ^ 0;',
+        'while (_n--) {',
             unrolledBodyOfLoop,
         '}'].join('');
     }
@@ -181,18 +181,18 @@ var peach = (function (create)
                 , loopBody = this.body()
                 , element = loopData[0]
                 , index = loopData[1]
-                , collection = loopData[2]
+                , array = loopData[2]
                 , params = [].concat(loopData)
                 , xUnroll = this.xUnroll
 
-            // paramsClone is now an array starting from collection, plus the names of any additional params should they exist
+            // params is an array starting from array, plus the names of any additional params should they exist
             params.splice(0, 2);
 
             return [
             'function (', params.join(','), ') {',
-                'var iterations = ', collection, '.length', ',',
+                'var _x = ', array, '.length', ',',
                     index, ' = 0', ',',
-                    'n', ',',
+                    '_n', ',',
                     element, ';',
                 constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
             '}'].join('');
@@ -224,7 +224,7 @@ var peach = (function (create)
         return function (collection, context)
         {
             /* @TODO
-            if (Object.prototype.toString.call(value) === "[object Object]")
+            if (Object.prototype.toString.call(collection) === "[object Object]")
             {
                 // use objectIterator...
             }
