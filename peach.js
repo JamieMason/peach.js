@@ -1,10 +1,10 @@
-var peach = (function(create)
+var peach = (function (create)
 {
     /* ==================================================================================== *\
      * Loop Construct Compilers
     \* ==================================================================================== */
 
-    function forDown(paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
+    function forDown (paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
     {
         return [
         'for (n = iterations % ', timesToUnroll, '; n > 0; n--) {',
@@ -15,7 +15,7 @@ var peach = (function(create)
         '}'].join('');
     }
 
-    function whileDown(paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
+    function whileDown (paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
     {
         return [
         'n = iterations % ', timesToUnroll, ';',
@@ -65,13 +65,15 @@ var peach = (function(create)
             , 'Safari 5.0.5': forDown // forUp
             , 'Safari 5.1': forDown
         }
+        , arrayCompiler
+        , objectCompiler;
 
     /* ==================================================================================== *\
      * utility which decorates a function with methods for accessing it's source code and
      * named parameters.
     \* ==================================================================================== */
 
-    function inspectableFn(fn)
+    function inspectableFn (fn)
     {
         var source
             , paramNames
@@ -84,7 +86,7 @@ var peach = (function(create)
          * someFn.source();
          * >> "function someFn (a,b) { return a * b; }"
          */
-        fn.source = function()
+        fn.source = function ()
         {
             return source || (source = Function.prototype.toString.apply(fn));
         };
@@ -99,7 +101,7 @@ var peach = (function(create)
          * someOtherFn.params();
          * >> []
          */
-        fn.params = function()
+        fn.params = function ()
         {
             source = fn.source();
             return paramNames || (paramNames = source.split(/\(|\)/g)[1].replace(/\s*/g, '').split(','));
@@ -112,7 +114,7 @@ var peach = (function(create)
          * someFn.body();
          * >> " return a * b; "
          */
-        fn.body = function()
+        fn.body = function ()
         {
             if (body)
             {
@@ -133,131 +135,146 @@ var peach = (function(create)
         return fn;
     }
 
-    // Private methods used by peach()
-    // ====================================================================================
+    /* ==================================================================================== *\
+     * Compiler for iterators to be used with Arrays
+    \* ==================================================================================== */
 
-    /**
-     * @returns {String} Writes the source code for compiled iterator
-     */
-    function compileIteratorSource(paramNames, bodyOfLoop, timesToUnroll)
+    function ArrayIteratorCompiler (fn, xUnroll)
     {
-        var element = paramNames[0]
-            , index = paramNames[1]
-            , list = paramNames[2]
-            , paramsClone = [].concat(paramNames);
-
-        // paramsClone is now an array starting from list, plus the names of any additional params should they exist
-        paramsClone.splice(0,2);
-
-        return [
-        'function (', paramsClone.join(','), ') {',
-            'var iterations = ', list, '.length', ',',
-                index, ' = 0', ',',
-                'n', ',',
-                element, ';',
-
-            constructInUse(paramNames, bodyOfLoop, new Array(timesToUnroll + 1).join(bodyOfLoop), timesToUnroll),
-        '}'].join('');
+        var self = this;
+        self.fn = inspectableFn(fn);
+        self.xUnroll = xUnroll || 8;
     }
 
-    /**
-     * @returns {String} Writes the source code for the code to be run during each pass of the loop
-     */
-    function getLoopBody(paramNames, bodyOfFunction)
-    {
-        return [
-            paramNames[0] + '=' + paramNames[2] + '[' + paramNames[1] + '];'
-            , bodyOfFunction
-            , paramNames[1] + '++;'
-        ].join('\n');
-    }
+    ArrayIteratorCompiler.prototype = {
+        /**
+         * @returns {Array} Ensures the param names of the compiled iterator match those of the original and that all 3 we require are all set.
+         */
+        nameParams: function ()
+        {
+            var params = this.fn.params();
+            params[0] = params[0] || '_e'; // (E)lement
+            params[1] = params[1] || '_i'; // (I)ndex or (I)dentifier
+            params[2] = params[2] || '_c'; // (C)ollection
+            return params;
+        }
 
-    /**
-     * @returns {Array} Ensures the param names of the compiled iterator match those of the original and that all 3 we require are all set.
-     */
-    function getParamNames(iterator)
-    {
-        var paramNames = iterator.params();
-        paramNames[0] = paramNames[0] || 'element';
-        paramNames[1] = paramNames[1] || 'index';
-        paramNames[2] = paramNames[2] || 'list';
-        return paramNames;
-    }
+        /**
+         * @returns {String} Writes the source code for the code to be run during each pass of the loop
+         */
+        , body: function ()
+        {
+            var params = this.nameParams();
+            return [
+                params[0] + '=' + params[2] + '[' + params[1] + '];'
+                , this.fn.body()
+                , params[1] + '++;'
+            ].join('\n');
+        }
 
-    /**
-     * @returns {Boolean} Whether the value supplied is an Object
-     */
-    function isObject (value)
-    {
-        return Object.prototype.toString.call(value) === "[object Object]";
-    }
+        /**
+         * @returns {String} Writes the source code for compiled iterator
+         */
+        , source: function ()
+        {
+            var loopData = this.nameParams()
+                , loopBody = this.body()
+                , element = loopData[0]
+                , index = loopData[1]
+                , collection = loopData[2]
+                , params = [].concat(loopData)
+                , xUnroll = this.xUnroll
 
-    /**
-     * @returns {Function} The function returned to the compiler caller
-     */
-    function iteratorWrapper(compiledIterator)
+            // paramsClone is now an array starting from collection, plus the names of any additional params should they exist
+            params.splice(0, 2);
+
+            return [
+            'function (', params.join(','), ') {',
+                'var iterations = ', collection, '.length', ',',
+                    index, ' = 0', ',',
+                    'n', ',',
+                    element, ';',
+                constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
+            '}'].join('');
+        }
+
+        , compile: function ()
+        {
+            return create(this.source());
+        }
+    };
+
+    /* ==================================================================================== *\
+     * @TODO Compiler for iterators to be used with Objects
+    \* ==================================================================================== */
+
+    // ...
+
+    /* ==================================================================================== *\
+     * The function called each time the iterator is run, inspects the collection and forwards
+     * the arguments to an iterator optimised for either and Array or Object
+    \* ==================================================================================== */
+
+    function router (arrayIterator, objectIterator)
     {
         /**
-         * @param {Array} list The collection to be iterated over. @TODO Add support for Objects
+         * @param {Array|Object} collection The collection to be iterated over. @TODO Add support for Objects
          * @param {Object} [context] Optionally define what 'this' should reference within the iterator
          */
-        return function(list, context)
+        return function (collection, context)
         {
+            /* @TODO
+            if (Object.prototype.toString.call(value) === "[object Object]")
+            {
+                // use objectIterator...
+            }
+            */
+
             if (!context)
             {
-                return compiledIterator(list);
+                return arrayIterator(collection);
             }
 
             var args = Array.prototype.slice.call(arguments);
             args.splice(1, 1);
-            return compiledIterator.apply(context || {}, args);
+            return arrayIterator.apply(context || {}, args);
         };
     }
 
-    /**
-     * @returns {Function} Returns a new function with the original functionality and optimised iteration combined.
-     */
-    function eachIteratorCompiler(iterator, timesToUnroll)
+    function compiler (fn, xUnroll)
     {
-        iterator = inspectableFn(iterator);
+        var arrayIteratorCompiler = new ArrayIteratorCompiler(fn, xUnroll)
+            , objectIteratorCompiler; // @TODO = new ObjectIteratorCompiler(fn, xUnroll);
 
-        var params = getParamNames(iterator)
-            , bodyOfLoop = getLoopBody(params, iterator.body())
-            , compiledSource = compileIteratorSource(params, bodyOfLoop, timesToUnroll || 8);
-
-        return iteratorWrapper(create(compiledSource));
+        return router(arrayIteratorCompiler.compile()/*, @TODO objectIteratorCompiler.compile() */);
     }
-
-    // Public methods to configure peach()
-    // ====================================================================================
 
     /**
      * @param {string} reconciledUa eg: "IE Mobile 7", "Chrome 7.0.503"
      */
-    function setUserAgent(reconciledUa)
-    {
-        if (constructLookup[reconciledUa])
-        {
-            constructInUse = constructLookup[reconciledUa];
-            return;
-        }
+    compiler.tune = function (reconciledUa)
+     {
+         if (constructLookup[reconciledUa])
+         {
+             constructInUse = constructLookup[reconciledUa];
+             return;
+         }
 
-        var vendorAndVersion = reconciledUa.split(/ (?=[0-9])/)
-            , vendor = vendorAndVersion[0]
-            , version = vendorAndVersion[1]
-            , majorVersionNumber = version.split('.')[0]
-            , vendorAndMajorVersion = vendor + ' ' + majorVersionNumber;
+         var vendorAndVersion = reconciledUa.split(/ (?=[0-9])/)
+             , vendor = vendorAndVersion[0]
+             , version = vendorAndVersion[1]
+             , majorVersionNumber = version.split('.')[0]
+             , vendorAndMajorVersion = vendor + ' ' + majorVersionNumber;
 
-        constructInUse = constructLookup[vendorAndMajorVersion] || constructLookup[vendor] || forDown;
+         constructInUse = constructLookup[vendorAndMajorVersion] || constructLookup[vendor] || forDown;
+     };
+
+    return compiler;
+}(
+    function (s) {
+        return (function (ev) {
+            var f;
+            return (f = ev('(f=' + s + ')'));
+        }(eval));
     }
-
-    eachIteratorCompiler.setUserAgent = setUserAgent;
-
-    return eachIteratorCompiler;
-}(function (s)
-{
-    return (function(ev) {
-        var f;
-        return (f = ev('(f=' + s + ')'));
-    }(eval));
-}));
+));
