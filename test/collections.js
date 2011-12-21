@@ -1,20 +1,79 @@
 (function()
 {
-    describe('unroll', function() {
-        it('provides iterators with a value and iteration count', function() {
-            var iterator = unroll(function(element, index) {
-                expect(element).toEqual(index + 1);
+    describe("peach", function()
+    {
+        it("provides the value and index of each member of the collection in turn", function()
+        {
+            // precompile
+            var iterator = peach(function(val, i)
+            {
+                expect(val).toEqual(i + 1);
             });
+
+            // run
             iterator([1, 2, 3]);
         });
 
-        it("can define the binding of an iterator's 'this' keyword", function() {
-            var answers = []
-                , iterator = unroll(function(element) {
-                    answers.push(element * this.multiplier);
+        it("will bind your iterator to an object if it is passed as the second argument when fired", function()
+        {
+            var collection = [1, 2, 3]
+                , iterator;
+
+            iterator = peach(function(val, i, arr)
+            {
+                arr[i] = val * this.multiplier;
+            });
+
+            iterator(collection, {
+                multiplier: 5
+            });
+
+            expect(collection.join(", ")).toEqual("5, 10, 15");
+        });
+
+        it("loses access to any local variables found in the enclosing scope at compile time", function ()
+        {
+            var someValue = "Hello"
+                , iterator = peach(function(val, i, arr)
+                {
+                    expect(val).toEqual(i + 1);
+                    expect(typeof someValue).toEqual("undefined");
                 });
-            iterator([1, 2, 3], { multiplier: 5 });
-            expect(answers.join(', ')).toEqual('5, 10, 15');
+
+            iterator([1, 2, 3]);
+        });
+
+        it("gains access to any local variables passed as arguments at run time", function ()
+        {
+            var someValue = "Hello"
+                , otherValue = ", is it me you're looking for?"
+                , iterator = peach(function(val, i, arr, someValue, otherValue)
+                {
+                    expect(val).toEqual(i + 1);
+                    expect(someValue).toEqual("Hello");
+                    expect(otherValue).toEqual(", is it me you're looking for?");
+                });
+
+            iterator([1, 2, 3], {}, someValue, otherValue);
+        });
+
+        it("iterates over Objects as well as Arrays, and ignores the Object's Prototype", function ()
+        {
+            var collection = {
+                    one : 1
+                    , two : 2
+                    , three : 3
+                }
+                , answers = []
+                , iterator = peach(function(val, key, obj, answers)
+                {
+                    answers.push(key);
+                });
+
+            collection.constructor.prototype.four = 4;
+            iterator(collection, {}, answers);
+            expect(answers.join(", ")).toEqual("one, two, three");
+            delete collection.constructor.prototype.four;
         });
     });
 }());
@@ -32,20 +91,13 @@ function old() {
     //   equals(num, i + 1, 'each iterators provide value and iteration count');
     // });
 
-    var test1 = unroll(function(num, i) {
-      equals(num, i + 1, 'each iterators provide value and iteration count');
-    });
+    // var answers = [];
+    // _.each([1, 2, 3], function(num){ answers.push(num * this.multiplier);}, {multiplier : 5});
+    // equals(answers.join(', '), '5, 10, 15', 'context object property accessed');
 
-    test1([1, 2, 3]);
-
-
-    var answers = [];
-    _.each([1, 2, 3], function(num){ answers.push(num * this.multiplier);}, {multiplier : 5});
-    equals(answers.join(', '), '5, 10, 15', 'context object property accessed');
-
-    answers = [];
-    _.forEach([1, 2, 3], function(num){ answers.push(num); });
-    equals(answers.join(', '), '1, 2, 3', 'aliased as "forEach"');
+    // answers = [];
+    // _.forEach([1, 2, 3], function(num){ answers.push(num); });
+    // equals(answers.join(', '), '1, 2, 3', 'aliased as "forEach"');
 
     answers = [];
     var obj = {one : 1, two : 2, three : 3};

@@ -1,4 +1,4 @@
-> `unroll(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to run faster.
+> `peach(iterator:Function, [timesToUnroll:Number]):Function` is a small utility to take functions you would pass to an iterator function such as [`_.each()`](http://documentcloud.github.com/underscore/#each) and returns a `someIterator(list:Array)`, which is tested to run faster.
 
 ###How ~~does~~ will it work?###
 
@@ -24,7 +24,7 @@ The looping construct in use is the one known to be fastest in the browser you'r
 	// _.each(ouputArguments, someCollection);
 	
 	// ...but instead precompile it (just once), into a faster version
-	var iteratorUnrolled16x = unroll(ouputArguments, 16);
+	var iteratorUnrolled16x = peach(ouputArguments, 16);
 	
 	// and call that instead
 	iteratorUnrolled16x(someCollection);

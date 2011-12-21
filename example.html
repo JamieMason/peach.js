@@ -2,16 +2,16 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>unroll(iterator, [timesToUnroll]);</title>
+	<title>peach(iterator, [timesToUnroll]);</title>
 </head>
 <body>
-	<script type="text/javascript" src="precompiled-each-iterators.js"></script>
+	<script type="text/javascript" src="peach.js"></script>
 	<script type="text/javascript" src="browserscope-plugin.js"></script>
 	<script type="text/javascript">
 	function ouputArguments (member, i, array) {
 		console.log(member, i, array, this);
 	}
-	var iteratorUnrolled16x = unroll(ouputArguments, 16);
+	var iteratorUnrolled16x = peach(ouputArguments, 16);
 	iteratorUnrolled16x(['a','b','c','d','e','f','g','h','i']);
 	iteratorUnrolled16x(['a','b','c','d','e','f','g','h','i'], {});
 	</script>

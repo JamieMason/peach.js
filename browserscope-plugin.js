@@ -34,7 +34,7 @@
 
         if (userAgentString)
         {
-            unroll.setUserAgent(userAgentString);
+            peach.setUserAgent(userAgentString);
         }
     }
 
