@@ -1,7 +1,17 @@
 var peach = (function (create)
 {
     /* ==================================================================================== *\
-     * Loop Construct Compilers
+     * Private Loop Constructs
+     * -----------------------
+     * You shouldn't try to use Peach's variables, but for info this is what they are.
+     * The names have been obfuscated to make clashes with your code less likely;
+     *
+     * _n   number tested and incremented in the loop's header
+     * _x   number of times the loop should run
+     * _e   element/value of the collection member at this pass of the loop
+     * _i   index/identifier/key of the collection member at this pass of the loop
+     * _c   collection being iterated over
+     * _k   array of property names found on the Object, not including it's prototype
     \* ==================================================================================== */
 
     function forDown (paramNames, bodyOfLoop, unrolledBodyOfLoop, timesToUnroll)
@@ -136,33 +146,74 @@ var peach = (function (create)
     }
 
     /* ==================================================================================== *\
+     * Compiler Methods
+    \* ==================================================================================== */
+
+    /**
+     * @returns {Array} Ensures the param names of the compiled iterator match those of the
+     * original and that all 3 we require are all set.
+     */
+    function nameParams ()
+    {
+        var params = this.fn.params();
+        params[0] = params[0] || '_e';
+        params[1] = params[1] || '_i';
+        params[2] = params[2] || '_c';
+        return params;
+    }
+
+    /**
+     * @returns {String} Writes the source code for the code to be run during each pass of
+     * the loop
+     */
+    function body ()
+    {
+        var params = this.nameParams();
+        return [
+            this.setValue(params)
+            , this.fn.body()
+            , params[1] + '++;'
+        ].join('\n');
+    }
+
+    /**
+     * @returns {Function} Converts the iterators source code into a function and combines it
+     * with a router
+     */
+    function compile ()
+    {
+        return create(this.source());
+    }
+
+    /* ==================================================================================== *\
+     * Code common to both Array and Object iterators
+    \* ==================================================================================== */
+
+    function abstractIteratorCompiler (fn, xUnroll)
+    {
+        return {
+            fn: inspectableFn(fn)
+            , xUnroll: xUnroll || 8
+            , nameParams: nameParams
+            , body: function (){}
+            , source: function (){}
+            , compile: compile
+        };
+    }
+
+    /* ==================================================================================== *\
      * Compiler for iterators to be used with Arrays
     \* ==================================================================================== */
 
-    function ArrayIteratorCompiler (fn, xUnroll)
+    function arrayIteratorCompiler (fn, xUnroll)
     {
-        var self = this;
-        self.fn = inspectableFn(fn);
-        self.xUnroll = xUnroll || 8;
-    }
-
-    ArrayIteratorCompiler.prototype = {
-        /**
-         * @returns {Array} Ensures the param names of the compiled iterator match those of the original and that all 3 we require are all set.
-         */
-        nameParams: function ()
-        {
-            var params = this.fn.params();
-            params[0] = params[0] || '_e'; // (E)lement
-            params[1] = params[1] || '_i'; // (I)ndex or (I)dentifier
-            params[2] = params[2] || '_c'; // (C)ollection
-            return params;
-        }
+        var base = abstractIteratorCompiler(fn, xUnroll);
 
         /**
-         * @returns {String} Writes the source code for the code to be run during each pass of the loop
+         * @returns {String} Writes the source code for the code to be run during each pass of
+         * the loop
          */
-        , body: function ()
+        base.body = function ()
         {
             var params = this.nameParams();
             return [
@@ -170,12 +221,12 @@ var peach = (function (create)
                 , this.fn.body()
                 , params[1] + '++;'
             ].join('\n');
-        }
+        };
 
         /**
          * @returns {String} Writes the source code for compiled iterator
          */
-        , source: function ()
+        base.source = function ()
         {
             var loopData = this.nameParams()
                 , loopBody = this.body()
@@ -183,9 +234,10 @@ var peach = (function (create)
                 , index = loopData[1]
                 , array = loopData[2]
                 , params = [].concat(loopData)
-                , xUnroll = this.xUnroll
+                , xUnroll = this.xUnroll;
 
-            // params is an array starting from array, plus the names of any additional params should they exist
+            // params is an array starting from array, plus the names of any additional params
+            // should they exist
             params.splice(0, 2);
 
             return [
@@ -196,19 +248,64 @@ var peach = (function (create)
                     element, ';',
                 constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
             '}'].join('');
-        }
+        };
 
-        , compile: function ()
-        {
-            return create(this.source());
-        }
-    };
+        return base;
+    }
 
     /* ==================================================================================== *\
      * @TODO Compiler for iterators to be used with Objects
     \* ==================================================================================== */
 
-    // ...
+    function objectIteratorCompiler (fn, xUnroll)
+    {
+        var base = abstractIteratorCompiler(fn, xUnroll);
+
+        /**
+         * @returns {String} Writes the source code for the code to be run during each pass of
+         * the loop
+         */
+        base.body = function ()
+        {
+            var params = this.nameParams();
+            return [
+                params[0] + '=' + params[2] + '[', params[1], '=_k[_i]];'
+                , this.fn.body()
+                , '_i++;'
+            ].join('\n');
+        };
+
+        /**
+         * @returns {String} Writes the source code for compiled iterator
+         */
+        base.source = function ()
+        {
+            var loopData = this.nameParams()
+                , loopBody = this.body()
+                , element = loopData[0]
+                , index = loopData[1]
+                , object = loopData[2]
+                , params = [].concat(loopData)
+                , xUnroll = this.xUnroll;
+
+            // params is an object starting from object, plus the names of any additional params
+            // should they exist
+            params.splice(0, 2);
+
+            return [
+            'function (', params.join(','), ') {',
+                'var _k = Object.keys(', object, '),',
+                    '_x = _k.length,',
+                    '_i = 0,',
+                    index, ',',
+                    '_n', ',',
+                    element, ';',
+                constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
+            '}'].join('');
+        };
+
+        return base;
+    }
 
     /* ==================================================================================== *\
      * The function called each time the iterator is run, inspects the collection and forwards
@@ -223,30 +320,32 @@ var peach = (function (create)
          */
         return function (collection, context)
         {
-            /* @TODO
-            if (Object.prototype.toString.call(collection) === "[object Object]")
-            {
-                // use objectIterator...
-            }
-            */
+            var isObject = Object.prototype.toString.call(collection) === "[object Object]"
+                , params
+                , iterator = isObject ? objectIterator : arrayIterator;
 
             if (!context)
             {
-                return arrayIterator(collection);
+                return iterator(collection);
             }
 
-            var args = Array.prototype.slice.call(arguments);
-            args.splice(1, 1);
-            return arrayIterator.apply(context || {}, args);
+            // get all params as a proper Array
+            params = Array.prototype.slice.call(arguments);
+
+            // so we can remove the context param from that list
+            params.splice(1, 1);
+
+            // and pass the rest to the iterator
+            return iterator.apply(context || {}, params);
         };
     }
 
     function compiler (fn, xUnroll)
     {
-        var arrayIteratorCompiler = new ArrayIteratorCompiler(fn, xUnroll)
-            , objectIteratorCompiler; // @TODO = new ObjectIteratorCompiler(fn, xUnroll);
+        var arrayIterator = arrayIteratorCompiler(fn, xUnroll)
+            , objectIterator = objectIteratorCompiler(fn, xUnroll);
 
-        return router(arrayIteratorCompiler.compile()/*, @TODO objectIteratorCompiler.compile() */);
+        return router(arrayIterator.compile(), objectIterator.compile());
     }
 
     /**
