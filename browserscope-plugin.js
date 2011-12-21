@@ -34,7 +34,7 @@
 
         if (userAgentString)
         {
-            peach.setUserAgent(userAgentString);
+            peach.tune(userAgentString);
         }
     }
 
