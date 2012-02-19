@@ -52,7 +52,7 @@
       // compile
       iterator = pEach(function(num, index, arr, answer)
       {
-        if (_.include(arr, num))
+        if (num === 2)
         {
           answer = true;
         }
