@@ -42,26 +42,7 @@
       iterator([1, 2, 3], someValue, otherValue);
     });
 
-    it("iterates over Objects as well as Arrays, and ignores the Object's Prototype", function()
-    {
-      var collection = {
-            one: 1,
-            two: 2,
-            three: 3
-          },
-          answers = [],
-          iterator = peach(function(val, key, obj, answers)
-          {
-            answers.push(key);
-          });
-
-      collection.constructor.prototype.four = 4;
-      iterator(collection, answers);
-      expect(answers.join(", ")).toEqual("one, two, three");
-      delete collection.constructor.prototype.four;
-    });
-
-    it("can reference the original collection from inside the iterator", function()
+    it("returns an object of the values of local variables", function()
     {
       var collection = [1, 2, 3],
           iterator,
@@ -81,6 +62,42 @@
       locals = iterator(collection, answer);
       expect(locals.answer).toEqual(true);
     });
+
+    it("iterates over Objects as well as Arrays, and ignores the Object's Prototype", function()
+    {
+      var collection = {
+            one: 1,
+            two: 2,
+            three: 3
+          },
+          answers = [],
+          iterator = peach(function(val, key, obj, answers)
+          {
+            answers.push(key);
+          });
+
+      collection.constructor.prototype.four = 4;
+      iterator(collection, answers);
+      expect(answers.join(", ")).toEqual("one, two, three");
+      delete collection.constructor.prototype.four;
+    });
+
+    it("handles a null properly", function()
+    {
+      var answers = 0,
+          iterator = peach(function(val, key, obj, answers)
+          {
+            answers++;
+          }),
+          locals;
+
+      expect(function () {
+        locals = iterator(null, answers);
+      }).not.toThrowError();
+
+      expect(locals.answers).toEqual(0);
+    });
+
   });
 }());
 
@@ -120,12 +137,12 @@ function do_not_run ()
     // });
     // ok(answer, 'can reference the original collection from inside the iterator');
 
-    answers = 0;
-    _.each(null, function()
-    {
-      ++answers;
-    });
-    equals(answers, 0, 'handles a null properly');
+    // answers = 0;
+    // _.each(null, function()
+    // {
+    //   ++answers;
+    // });
+    // equals(answers, 0, 'handles a null properly');
   });
 
   test('collections: map', function()

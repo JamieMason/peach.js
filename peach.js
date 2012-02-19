@@ -251,6 +251,7 @@ var peach = (function (create)
 
       return [
       'function (', params.join(','), ') {',
+        array, '=', array, '|| [];',
         'var _x = ', array, '.length', ',',
           index, ' = 0', ',',
           '_n', ',',
@@ -304,6 +305,7 @@ var peach = (function (create)
 
       return [
       'function (', params.join(','), ') {',
+        object, '=', object, '|| {};',
         'var _k = Object.keys(', object, '),',
           '_x = _k.length,',
           '_i = 0,',
@@ -332,8 +334,8 @@ var peach = (function (create)
     return function (collection)
     {
       return (Object.prototype.toString.call(collection) === "[object Object]"
-        ? objectIterator
-        : arrayIterator).apply(this, arguments);
+          ? objectIterator
+          : arrayIterator).apply(this, arguments);
     };
   }
 
