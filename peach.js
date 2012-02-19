@@ -185,6 +185,14 @@ var peach = (function (create)
         return create(this.source());
     }
 
+    function returnVars () {
+      return [
+            'return {',
+                this.nameParams().join(',').replace(/([^,]+)/g, '$1:$1'),
+            '};'
+        ].join('');
+    }
+
     /* ==================================================================================== *\
      * Code common to both Array and Object iterators
     \* ==================================================================================== */
@@ -198,6 +206,7 @@ var peach = (function (create)
             , body: function (){}
             , source: function (){}
             , compile: compile
+            , returnVars: returnVars
         };
     }
 
@@ -247,6 +256,7 @@ var peach = (function (create)
                     '_n', ',',
                     element, ';',
                 constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
+                this.returnVars(),
             '}'].join('');
         };
 
@@ -301,6 +311,7 @@ var peach = (function (create)
                     '_n', ',',
                     element, ';',
                 constructInUse(loopData, loopBody, new Array(xUnroll + 1).join(loopBody), xUnroll),
+                this.returnVars(),
             '}'].join('');
         };
 
@@ -316,27 +327,13 @@ var peach = (function (create)
     {
         /**
          * @param {Array|Object} collection The collection to be iterated over. @TODO Add support for Objects
-         * @param {Object} [context] Optionally define what 'this' should reference within the iterator
+         * plus additional arguments depending on your iterator
          */
-        return function (collection, context)
+        return function (collection)
         {
-            var isObject = Object.prototype.toString.call(collection) === "[object Object]"
-                , params
-                , iterator = isObject ? objectIterator : arrayIterator;
-
-            if (!context)
-            {
-                return iterator(collection);
-            }
-
-            // get all params as a proper Array
-            params = Array.prototype.slice.call(arguments);
-
-            // so we can remove the context param from that list
-            params.splice(1, 1);
-
-            // and pass the rest to the iterator
-            return iterator.apply(context || {}, params);
+            return (Object.prototype.toString.call(collection) === "[object Object]"
+              ? objectIterator
+              : arrayIterator).apply(this, arguments);
         };
     }
 
@@ -352,7 +349,7 @@ var peach = (function (create)
      * @param {string} reconciledUa eg: "IE Mobile 7", "Chrome 7.0.503"
      */
     compiler.tune = function (reconciledUa)
-     {
+    {
          if (constructLookup[reconciledUa])
          {
              constructInUse = constructLookup[reconciledUa];
@@ -373,7 +370,7 @@ var peach = (function (create)
     function (s) {
         return (function (ev) {
             var f;
-            return (f = ev('(f=' + s + ')'));
+            return (f = ev('(' + s + ')'));
         }(eval));
     }
 ));
