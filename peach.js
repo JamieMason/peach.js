@@ -1,4 +1,4 @@
-var peach = (function (create)
+var pEach = (function (create)
 {
   /* ==================================================================================== *\
    * Private Loop Constructs

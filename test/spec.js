@@ -1,13 +1,13 @@
-/*global describe,it,expect,peach*/
+/*global describe,it,expect,pEach*/
 
 (function()
 {
-  describe("peach", function()
+  describe("pEach", function()
   {
     it("provides the value and index of each member of the collection in turn", function()
     {
       // precompile
-      var iterator = peach(function(val, i)
+      var iterator = pEach(function(val, i)
           {
             expect(val).toEqual(i + 1);
           });
@@ -19,7 +19,7 @@
     it("loses access to any local variables found in the enclosing scope at compile time", function()
     {
       var someValue = "Hello",
-          iterator = peach(function(val, i, arr)
+          iterator = pEach(function(val, i, arr)
           {
             expect(val).toEqual(i + 1);
             expect(typeof someValue).toEqual("undefined");
@@ -32,7 +32,7 @@
     {
       var someValue = "Hello",
           otherValue = ", is it me you're looking for?",
-          iterator = peach(function(val, i, arr, someValue, otherValue)
+          iterator = pEach(function(val, i, arr, someValue, otherValue)
           {
             expect(val).toEqual(i + 1);
             expect(someValue).toEqual("Hello");
@@ -50,7 +50,7 @@
           locals;
 
       // compile
-      iterator = peach(function(num, index, arr, answer)
+      iterator = pEach(function(num, index, arr, answer)
       {
         if (_.include(arr, num))
         {
@@ -71,7 +71,7 @@
             three: 3
           },
           answers = [],
-          iterator = peach(function(val, key, obj, answers)
+          iterator = pEach(function(val, key, obj, answers)
           {
             answers.push(key);
           });
@@ -85,7 +85,7 @@
     it("handles a null properly", function()
     {
       var answers = 0,
-          iterator = peach(function(val, key, obj, answers)
+          iterator = pEach(function(val, key, obj, answers)
           {
             answers++;
           }),
