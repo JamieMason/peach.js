@@ -334,8 +334,8 @@ var peach = (function (create)
     return function (collection)
     {
       return (Object.prototype.toString.call(collection) === "[object Object]"
-          ? objectIterator
-          : arrayIterator).apply(this, arguments);
+        ? objectIterator
+        : arrayIterator).apply(this, arguments);
     };
   }
 
