@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>pEach JavaScript Web Performance Optimization, loop unrolling, Duff's Device</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" type="text/css">
+  <link rel="stylesheet" href="google-code-prettify/prettify.css" type="text/css">
+</head>
+<body onload="prettyPrint()" style="padding:1em">
+  <div class="container">
+    <div class="hero-unit">
+
+      <p class="lead">
+        Loop unwinding, also known as loop unrolling, is a loop transformation technique that attempts to optimize a program's execution speed at the expense of its filesize.
+      </p>
+      <p class="lead">The transformation can be undertaken manually by the programmer, or by an optimizing compiler such as <a href="https://github.com/JamieMason/Precompiled-each-Iterators"><strong>pEach</strong></a>.
+      </p>
+
+      <!-- <div class="container-fluid"> -->
+        <div class="row-fluid">
+          <div class="span6">
+            <h2>Normal</h2>
+            <pre class="prettyprint linenums">
+function double(array) {
+  for (var i = 0; i < array.length; i++) {
+    array[i] = array[i] * 2;
+  }
+}</pre>
+            <pre class="prettyprint linenums">
+double([1, 2, 3, /* ... */ 499, 500]);</pre>
+          </div>
+          <div class="span6">
+            <h2>Optimised with pEach</h2>
+            <pre class="prettyprint linenums">
+var double = pEach(function (num, i, array) {
+  array[i] = array[i] * 2;
+});
+
+
+</pre>
+            <pre class="prettyprint linenums">
+double([1, 2, 3, /* ... */ 499, 500]);</pre>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="span12">
+            <ol id="log"></ol>
+          </div>
+        </div>
+      <div style="text-align:center">
+        <button class="btn btn-primary btn-large">Compare Speed</button>
+      </div>
+    </div>
+  </div>
+  <a href="https://raw.github.com/JamieMason/Precompiled-each-Iterators/"><img style="position:absolute;top:0;right:0;border:0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+  <script src="google-code-prettify/prettify.js"></script>
+  <script src="benchmark.js"></script>
+  <script src="peach-min.js"></script>
+  <script src="gh-page.js"></script>
+</body>
+</html>
