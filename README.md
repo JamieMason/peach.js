@@ -1,7 +1,7 @@
 
-**`pEach(iterator:Function, [timesToUnroll:Number]):Function` takes functions you would pass to an iterator such as [_.each()](http://documentcloud.github.com/underscore/#each) and returns another which is optimised for runtime performance.**
+**`pEach(iterator:Function, [timesToUnroll:Number]):Function` takes functions you would pass to an iterator such as [_.each()](http://documentcloud.github.com/underscore/#each) or [Array.forEach](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach) and returns another which is optimised for runtime performance.**
 
-[![](https://raw.github.com/JamieMason/Precompiled-each-Iterators/master/static/peach-vs-jquery-vs-underscore.png)](http://www.browserscope.org/user/tests/table/agt1YS1wcm9maWxlcnINCxIEVGVzdBiq1u0JDA)
+Please run the [speed test suite at jsperf.com](http://jsperf.com/precompiled-each-iterators/10).
 
 ### How?
 
