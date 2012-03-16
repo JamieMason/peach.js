@@ -1,5 +1,6 @@
 var pEach = (function() {
 
+  // @TODO: "r" http://jsperf.com/for-vs-while/28
   var tplForDown = 'for(_n=_x%TIMES_TO_UNROLL;_n>0;_n--){TARGET_BODY}for(_n=(_x/TIMES_TO_UNROLL)^0;_n>0;_n--){UNROLLED_TARGET_BODY}',
       tplWhileDown = '_n=_x%TIMES_TO_UNROLL;while(_n--){TARGET_BODY}_n=(_x/TIMES_TO_UNROLL)^0;while(_n--){UNROLLED_TARGET_BODY}',
       tplArrayFn = 'function(NAMED_PARAMS){COLLECTION=COLLECTION||[];var _x=COLLECTION.length,_n,ELEMENT;INDEX=0;LOOP_CONSTRUCT return RETURN;}',
@@ -9,6 +10,7 @@ var pEach = (function() {
 
   /**
    * A wrapper for window.eval that sustains var name compression when using UglifyJS
+   *
    * @param  {String} code
    * @return {Function}
    */
@@ -17,7 +19,8 @@ var pEach = (function() {
   }
 
   /**
-   * Remove leading and traling whitespace from a String
+   * Remove leading and trailing whitespace from a String
+   *
    * @param  {String} string
    * @return {String}
    */
@@ -25,7 +28,13 @@ var pEach = (function() {
     return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
   }
 
-
+  /**
+   * Find and replace in String
+   *
+   * @param  {String} string    String whose contents are to be replaced
+   * @param  {Object} subs      Collection of substitutions, values are the strings to be replaced, values are the corresponding replacements
+   * @return {String}
+   */
   function merge(string, subs) {
     for (var i in subs) {
       string = string.replace(new RegExp(i, 'g'), subs[i]);
@@ -34,52 +43,57 @@ var pEach = (function() {
   }
 
   /**
-   * @returns {String} All source code for the function
-   * @example
-   * function someFn (a,b) { return a * b; }
-   * someFn.source();
-   * >> "function someFn (a,b) { return a * b; }"
+   * Get the whole source code of a function
+   *
+   * @param  {Function} fn
+   * @return {String}
    */
-
   function getFnSrc(fn) {
     return trim(Function.prototype.toString.apply(fn));
   }
 
   /**
-   * @returns {Array} The names of a function's parameters
+   * Get the names of any named arguments defined in a function
+   *
+   * @param  {Function} fn
+   * @returns {Array}
+   *
    * @example
    * function someFn (a,b) {}
    * someFn.params();
    * >> ["a","b"]
+   *
+   * @example
    * function someOtherFn () {}
    * someOtherFn.params();
    * >> []
    */
-
   function getFnNamedArgs(fn) {
     return getFnSrc(fn).split(/\(|\)/g)[1].replace(/\s*/g, '').split(',');
   }
 
   /**
-   * @returns {String} The source code for the executing body of the function
+   * Get the source code for the executing body of a function
+   *
+   * @param  {Function} fn
+   * @returns {String}
+   *
    * @example
    * function someFn (a,b) { return a * b; }
    * someFn.body();
    * >> " return a * b; "
    */
-
   function getFnBody(fn) {
     var all = getFnSrc(fn);
     return trim(all.substring(all.indexOf('{') + 1, all.lastIndexOf('}')));
   }
 
-  // @TODO: need object versions of some of the above
-  // =================
-  // function isSet (value) {
-  //   return typeof value !== 'undefined';
-  // }
-  // get the named arguments for the target
-
+  /**
+   * Get the names of the named arguments to be defined on the new function we're creating
+   *
+   * @param  {Function} srcFn    The original function being precompiled
+   * @return {Array}
+   */
   function getTargetArgs(srcFn) {
     var args = getFnNamedArgs(srcFn);
     args[0] = args[0] || '_e';
@@ -88,6 +102,11 @@ var pEach = (function() {
     return args;
   }
 
+  /**
+   * [getTargetApi description]
+   * @param  {[type]} srcFn [description]
+   * @return {[type]}
+   */
   function getTargetApi(srcFn) {
     var args = getTargetArgs(srcFn);
     args.splice(0, 2);
