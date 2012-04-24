@@ -1,10 +1,9 @@
 
 **April 24th 2012**
 
-Project discontinued in favour of [https://github.com/bestiejs/lodash](https://github.com/bestiejs/lodash) which has implemented the same technique of function compilation and applied it to underscore.js. Thanks goes to @jdalton for his earlier help [[1](http://jsperf.com/precompiled-each-iterators/2#comment-1)] [[2](http://jsperf.com/precompiled-each-iterators/6#comment-1)] with this project.
+Project discontinued in favour of [https://github.com/bestiejs/lodash](https://github.com/bestiejs/lodash) which has implemented the same technique of function compilation and applied it to underscore.js. Thanks goes to [@jdalton](https://github.com/jdalton) for his earlier help [[1](http://jsperf.com/precompiled-each-iterators/2#comment-1)] [[2](http://jsperf.com/precompiled-each-iterators/6#comment-1)] with this project.
 
-
-
+---
 
 > **`pEach(iterator:Function, [timesToUnroll:Number]):Function` takes functions you would pass to an iterator such as [_.each()](http://documentcloud.github.com/underscore/#each) or [Array.forEach](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach) and returns another which is optimised for runtime performance.**
 > 
