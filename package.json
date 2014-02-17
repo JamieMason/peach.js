@@ -1,0 +1,29 @@
+{
+  "name": "peach",
+  "version": "0.1.0",
+  "author": "Jamie Mason, @fold_left",
+  "description": "A precompiled forEach, unrolled for faster runtime performance.",
+  "homepage": "https://github.com/JamieMason/peach",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "esprima": "~1.0.4",
+    "escodegen": "~1.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:JamieMason/peach.git"
+  },
+  "keywords": [
+    "optimisation",
+    "unrolling",
+    "duff's",
+    "device",
+    "iteration",
+    "loops",
+    "each"
+  ],
+  "bugs": {
+    "url": "https://github.com/JamieMason/peach/issues"
+  }
+}
